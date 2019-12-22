@@ -1,0 +1,19 @@
+{
+  "debug": false,
+  "server": {
+    "address": ":9090"
+  },
+  "context":{
+    "timeout":2
+  },
+  "database": {
+      "host": "0.0.0.0",
+      "port": "3306",
+      "user": "user",
+      "pass": "password",
+      "name": "article"
+  },
+  "parse_time": "true",
+  "time_zone": "Asia/Shanghai"
+
+}
