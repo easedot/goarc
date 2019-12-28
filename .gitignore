@@ -17,3 +17,4 @@
 bin/
 /engine
 /.go-version
+.DS_Store
