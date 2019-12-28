@@ -1,0 +1,19 @@
+{
+  "database": {
+    "user": "user",
+    "password": "password",
+    "net": "tcp",
+    "host": "127.0.0.1",
+    "name": "article",
+    "port": 3306,
+    "allowNativePasswords": true,
+    "params": {
+      "parseTime": "true",
+      "timeZone": "Asia/Shanghai"
+    }
+  },
+  "server": {
+    "address": ":9090"
+  },
+  "debug": true
+}
