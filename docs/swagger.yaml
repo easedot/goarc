@@ -1,5 +1,109 @@
+basePath: /api/v1
+definitions:
+  entities.Article:
+    properties:
+      author:
+        $ref: '#/definitions/entities.Author'
+        type: object
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      title:
+        type: string
+      updated_at:
+        type: string
+    required:
+    - content
+    - title
+    type: object
+  entities.Author:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:9090
 info:
-  contact: {}
+  contact:
+    email: easedot@gmail.com
+    name: API Support
   license: {}
-paths: {}
+  title: Clean Arc API
+  version: "1.0"
+paths:
+  /article/{id}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Article'
+      summary: get article list
+      tags:
+      - Article
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: Article ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update article
+        in: body
+        name: article
+        required: true
+        schema:
+          $ref: '#/definitions/entities.Article'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Article'
+      summary: update article
+      tags:
+      - Article
+  /articles:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/entities.Article'
+            type: array
+      summary: get article list
+      tags:
+      - Article
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

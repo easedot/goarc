@@ -13,3 +13,9 @@ func(r *registry) NewArticleController() controller.ArticleController {
 	ai:= interactor.NewArticleInteractor(ar,ap)
 	return controller.NewArticleController(ai)
 }
+func(r *registry) NewAuthorController() controller.AuthorController {
+	ar:= repository.NewArticleRepository(r.db)
+	ap:= presenter.NewArticlePresenter()
+	ai:= interactor.NewArticleInteractor(ar,ap)
+	return controller.NewAuthorController(ai)
+}

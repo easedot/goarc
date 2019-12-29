@@ -6,4 +6,6 @@ import (
 
 type ArticleRepository interface {
 	Query(u [] *entities.Article ) ([]*entities.Article,error)
+	Find(u *entities.Article)(*entities.Article,error)
+	Update(u *entities.Article) error
 }
