@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/easedot/goarc/config"
+	"github.com/easedot/goarc/drivers/websocket"
 	"github.com/easedot/goarc/registry"
 	"github.com/easedot/goarc/drivers/datastore"
 	"github.com/easedot/goarc/drivers/router"
@@ -21,6 +22,7 @@ func main() {
 
 	e := echo.New()
 	router.NewRouter(e,r.NewAppController())
+	websocket.NewWebSocket(e)
 
 	log.Fatal(e.Start(config.C.Server.Address))
 

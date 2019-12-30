@@ -13,4 +13,5 @@ require (
 	github.com/swaggo/echo-swagger v0.0.0-20191205130555-62f81ea88919
 	github.com/swaggo/swag v1.6.3
 	github.com/valyala/fasttemplate v1.1.0 // indirect
+	golang.org/x/net v0.0.0-20191204025024-5ee1b9f4859a
 )

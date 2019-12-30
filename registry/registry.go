@@ -18,7 +18,10 @@ type registry struct {
 	db * godbs.DbHelper
 }
 func(r *registry) NewAppController() controller.AppController{
-
-	return 	r.NewArticleController()
+    x :=struct{
+		r.NewAuthorController()
+		r.NewArticleController()
+	}
+	return 	x
 
 }
