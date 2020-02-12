@@ -1,11 +1,11 @@
 package repository
 
 import (
-	"github.com/easedot/goarc/entities"
+	"github.com/easedot/goarc/domain"
 )
 
 type ArticleRepository interface {
-	Query(u [] *entities.Article ) ([]*entities.Article,error)
-	Find(u *entities.Article)(*entities.Article,error)
-	Update(u *entities.Article) error
+	Query(u [] *domain.Article ) ([]*domain.Article,error)
+	Find(u *domain.Article)(*domain.Article,error)
+	Update(u *domain.Article) error
 }

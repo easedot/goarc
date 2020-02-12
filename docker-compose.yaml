@@ -4,13 +4,13 @@ services:
     image: go-arch
     container_name: go_arc_api
     ports:
-      - 9090:9090
+      - 8080:8080
     depends_on:
       mysql:
         condition: service_healthy
 
     volumes:
-      - ./config_dev.json:/app/config_dev.json
+      - ./config/config_dev.yml:/app/config_dev.yml
   mysql:
     image: mysql:5.7 
     container_name: go_arch_mysql
@@ -28,4 +28,3 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 5s
       retries: 10
-

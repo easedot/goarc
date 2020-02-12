@@ -10,29 +10,24 @@
   <p id="output"></p>
 
   <script>
-    var loc = window.location;
-    var uri = 'ws:';
-
-    if (loc.protocol === 'https:') {
-      uri = 'wss:';
-    }
-    uri += '//' + loc.host;
-    uri += '/ws_hello';
-
-    ws = new WebSocket(uri)
+    const loc = window.location;
+    const path = '/ws_hello';
+    let uri = (loc.protocol === 'https:') ? 'wss:' : 'ws:';
+    let url=uri+'//'+loc.host+path;
+    ws = new WebSocket(url);
 
     ws.onopen = function() {
-      console.log('Connected')
+      console.log('Connected:',url)
     }
 
     ws.onmessage = function(evt) {
-      var out = document.getElementById('output');
+      const out = document.getElementById('output');
       out.innerHTML += evt.data + '<br>';
     }
 
     setInterval(function() {
       ws.send('Hello, Server!');
-    }, 1000);
+    }, 5000);
   </script>
 </body>
 

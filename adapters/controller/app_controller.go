@@ -2,5 +2,9 @@ package controller
 
 type AppController interface {
 	ArticleController
-	//AuthorController
+	AuthorController
+}
+type Controller struct {
+	ArticleController
+	AuthorController
 }

@@ -1,10 +1,10 @@
 package presenter
 
 import (
-	"github.com/easedot/goarc/entities"
+	"github.com/easedot/goarc/domain"
 )
 
 type ArticlePresenter interface {
-	ResponseArticles(as [] *entities.Article) []*entities.Article
-	ResponseArticle(as *entities.Article) *entities.Article
+	ResponseArticles(as [] *domain.Article) []*domain.Article
+	ResponseArticle(as *domain.Article) *domain.Article
 }

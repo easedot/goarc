@@ -3,7 +3,7 @@ package controller
 import (
 	"net/http"
 
-	"github.com/easedot/goarc/entities"
+	"github.com/easedot/goarc/domain"
 	"github.com/easedot/goarc/usecases/interactor"
 )
 
@@ -22,8 +22,8 @@ func NewAuthorController(ai interactor.ArticleInteractor) AuthorController{
 
 func (ai *authorController)GetAutuors(c Context) error  {
 	//controller use usecase to query data
-	var ars []*entities.Article
-	ar:=&entities.Article{ID:1}
+	var ars []*domain.Article
+	ar:=&domain.Article{ID: 1}
 	ars=append(ars,ar)
 	a,err:=ai.articleInteractor.Query(ars)
 	if err!=nil{

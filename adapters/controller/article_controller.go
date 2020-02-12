@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/easedot/goarc/entities"
+	"github.com/easedot/goarc/domain"
 	"github.com/easedot/goarc/usecases/interactor"
 )
 
@@ -30,13 +30,13 @@ func NewArticleController(ai interactor.ArticleInteractor) ArticleController{
 // @Accept json
 // @Produce json
 // @Router /articles [get]
-// @Success 200 {array} entities.Article
-func (ai *articleController)GetArticles(c Context) error  {
+// @Success 200 {array} domain.Article
+func (ac *articleController)GetArticles(c Context) error  {
 	//controller use usecase to query data
-	var ars []*entities.Article
-	ar:=&entities.Article{ID:1}
+	var ars []*domain.Article
+	ar:=&domain.Article{ID: 1}
 	ars=append(ars,ar)
-	a,err:=ai.articleInteractor.Query(ars)
+	a,err:= ac.articleInteractor.Query(ars)
 	if err!=nil{
 		return err
 	}
@@ -51,11 +51,11 @@ func (ai *articleController)GetArticles(c Context) error  {
 // @Produce json
 // @Param id path int true "Article ID"
 // @Router /article/{id} [get]
-// @Success 200 {object} entities.Article
-func (ai *articleController)GetArticle(c Context) error  {
+// @Success 200 {object} domain.Article
+func (ac *articleController)GetArticle(c Context) error  {
 	id,_:=strconv.Atoi(c.Param("id"))
-	ar:=&entities.Article{ID:int64(id)}
-	a,err:=ai.articleInteractor.Find(ar)
+	ar:=&domain.Article{ID: int64(id)}
+	a,err:= ac.articleInteractor.Find(ar)
 	if err!=nil{
 		return err
 	}
@@ -69,15 +69,15 @@ func (ai *articleController)GetArticle(c Context) error  {
 // @Accept json
 // @Produce json
 // @Param id path int true "Article ID"
-// @Param  article body entities.Article true "Update article"
+// @Param  article body domain.Article true "Update article"
 // @Router /article/{id} [put]
-// @Success 200 {object} entities.Article
-func (ai *articleController)UpdateArticle(c Context) error  {
+// @Success 200 {object} domain.Article
+func (ac *articleController)UpdateArticle(c Context) error  {
 	id,_:=strconv.Atoi(c.Param("id"))
-	ar:=&entities.Article{}
+	ar:=&domain.Article{}
 	c.Bind(ar)
 	ar.ID = int64(id)
-	err:=ai.articleInteractor.Update(ar)
+	err:= ac.articleInteractor.Update(ar)
 	if err!=nil{
 		return err
 	}

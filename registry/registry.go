@@ -13,15 +13,12 @@ type Registry interface {
 func NewRegistry(db *godbs.DbHelper) Registry{
 	return &registry{db:db}
 }
-
 type registry struct {
 	db * godbs.DbHelper
 }
 func(r *registry) NewAppController() controller.AppController{
-    x :=struct{
-		r.NewAuthorController()
-		r.NewArticleController()
-	}
-	return 	x
-
+	c:=controller.Controller{
+		ArticleController:r.NewArticleController(),
+		AuthorController:r.NewAuthorController()}
+	return 	c
 }

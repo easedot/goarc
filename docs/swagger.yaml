@@ -3,7 +3,7 @@ definitions:
   entities.Article:
     properties:
       author:
-        $ref: '#/definitions/entities.Author'
+        $ref: '#/definitions/domain.Author'
         type: object
       content:
         type: string
@@ -55,7 +55,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.Article'
+            $ref: '#/definitions/domain.Article'
       summary: get article list
       tags:
       - Article
@@ -73,7 +73,7 @@ paths:
         name: article
         required: true
         schema:
-          $ref: '#/definitions/entities.Article'
+          $ref: '#/definitions/domain.Article'
           type: object
       produces:
       - application/json
@@ -81,7 +81,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entities.Article'
+            $ref: '#/definitions/domain.Article'
       summary: update article
       tags:
       - Article
@@ -96,7 +96,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/entities.Article'
+              $ref: '#/definitions/domain.Article'
             type: array
       summary: get article list
       tags:

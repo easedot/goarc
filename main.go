@@ -1,29 +1,36 @@
 package main
 
 import (
-	"log"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
+	"github.com/zserge/webview"
 
 	"github.com/easedot/goarc/config"
-	"github.com/easedot/goarc/drivers/websocket"
+	"github.com/easedot/goarc/devices/datastore"
+	"github.com/easedot/goarc/devices/router"
 	"github.com/easedot/goarc/registry"
-	"github.com/easedot/goarc/drivers/datastore"
-	"github.com/easedot/goarc/drivers/router"
 )
 
 func main() {
 
-	db:=datastore.NewDB()
+	db := datastore.NewDB()
 	defer db.Close()
 
-	r:=registry.NewRegistry(db)
+	rds, _ := datastore.NewRedis()
+	defer rds.Close()
+
+	r := registry.NewRegistry(db)
 
 	e := echo.New()
-	router.NewRouter(e,r.NewAppController())
-	websocket.NewWebSocket(e)
+	router.NewRouter(e, r.NewAppController())
+	router.NewChatServer(e, rds)
+	//router.NewWebSocket(e)
+	//router.NewSocketIO(e)
 
-	log.Fatal(e.Start(config.C.Server.Address))
+	//for standlone server
+	//log.Fatal(e.Start(config.C.Server.Address))
+
+	go e.Start(config.C.Server.Address)
+	webview.Open("stock demo", "http://localhost:8080/chat.html", 1024, 768, true)
 
 }

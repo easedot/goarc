@@ -54,7 +54,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.Article"
+                            "$ref": "#/definitions/domain.Article"
                         }
                     }
                 }
@@ -85,7 +85,7 @@ var doc = `{
                         "required": true,
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/entities.Article"
+                            "$ref": "#/definitions/domain.Article"
                         }
                     }
                 ],
@@ -93,7 +93,7 @@ var doc = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entities.Article"
+                            "$ref": "#/definitions/domain.Article"
                         }
                     }
                 }
@@ -117,7 +117,7 @@ var doc = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entities.Article"
+                                "$ref": "#/definitions/domain.Article"
                             }
                         }
                     }
@@ -126,7 +126,7 @@ var doc = `{
         }
     },
     "definitions": {
-        "entities.Article": {
+        "domain.Article": {
             "type": "object",
             "required": [
                 "content",
@@ -135,7 +135,7 @@ var doc = `{
             "properties": {
                 "author": {
                     "type": "object",
-                    "$ref": "#/definitions/entities.Author"
+                    "$ref": "#/definitions/domain.Author"
                 },
                 "content": {
                     "type": "string"
@@ -154,7 +154,7 @@ var doc = `{
                 }
             }
         },
-        "entities.Author": {
+        "domain.Author": {
             "type": "object",
             "properties": {
                 "created_at": {

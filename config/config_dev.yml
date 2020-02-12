@@ -9,6 +9,11 @@ database:
   params:
     parseTime: "true"
     timeZone: "Asia/Shanghai"
+redis:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  db: 0
 server:
-  address: ":9090"
+  address: ":8080"
 debug: true

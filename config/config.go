@@ -23,6 +23,12 @@ type appConfig struct {
 			TimeZone 	string
 		}
 	}
+	Redis struct{
+		Host string
+		Port string
+		Password string
+		Db int
+	}
 	Server struct {
 		Address	string
 	}
