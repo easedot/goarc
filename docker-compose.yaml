@@ -1,8 +1,8 @@
 version: "2.3"
 services:
   web:
-    image: go-arch
-    container_name: go_arc_api
+    image: hb-vendor
+    container_name: hb_vendor_api
     ports:
       - 8080:8080
     depends_on:
@@ -13,14 +13,14 @@ services:
       - ./config/config_dev.yml:/app/config_dev.yml
   mysql:
     image: mysql:5.7 
-    container_name: go_arch_mysql
+    container_name: hb_vendor_mysql
     command: mysqld --user=root
-    volumes:
-      - ./article.sql:/docker-entrypoint-initdb.d/init.sql
+#    volumes:
+#      - ./hb_vendor.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - 3306:3306
+      - 3310:3306
     environment:
-      - MYSQL_DATABASE=article
+      - MYSQL_DATABASE=huobi_vendors
       - MYSQL_USER=user
       - MYSQL_PASSWORD=password
       - MYSQL_ROOT_PASSWORD=root
@@ -28,3 +28,7 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 5s
       retries: 10
+    #docker exec -it f-mysql /bin/bash
+    #mysql -u root -p
+    #GRANT ALL PRIVILEGES ON *.* TO 'user'@'%';
+    #FLUSH PRIVILEGES

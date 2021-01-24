@@ -3,8 +3,8 @@ database:
   password: password
   net: tcp
   host: 127.0.0.1
-  name: article
-  port: 3306
+  name: huobi_vendors
+  port: 3310
   allowNativePasswords: true
   params:
     parseTime: "true"

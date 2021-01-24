@@ -16,39 +16,40 @@ type appConfig struct {
 		Net                  string
 		Host                 string
 		Name                 string
-		Port				 string
+		Port                 string
 		AllowNativePasswords bool
 		Params               struct {
-			ParseTime 	string
-			TimeZone 	string
+			ParseTime string
+			TimeZone  string
 		}
 	}
-	Redis struct{
-		Host string
-		Port string
+	Redis struct {
+		Host     string
+		Port     string
 		Password string
-		Db int
+		Db       int
 	}
 	Server struct {
-		Address	string
+		Address string
 	}
 	Debug bool
 }
 
 var C appConfig
-func init(){
-	env:="dev"
-	if set,find:=os.LookupEnv("ENV");find{
-		env=strings.ToLower(set)
+
+func InitConfig() {
+	env := "dev"
+	if set, find := os.LookupEnv("ENV"); find {
+		env = strings.ToLower(set)
 	}
-	configFile :=fmt.Sprintf("config_%s.yml",env)
+	configFile := fmt.Sprintf("config_%s.yml", env)
 	//viper.SetConfigFile(configFile)
 	viper.SetConfigName(configFile)
 	viper.SetConfigType("yml")
 	viper.AddConfigPath("./config")
 	//viper.AutomaticEnv()
 
-	if err:=viper.ReadInConfig();err!=nil{
+	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println(err)
 		log.Fatalln(err)
 	}

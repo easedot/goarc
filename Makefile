@@ -12,7 +12,7 @@ clean:
 	if [ -f ${BINARY} ] ; then rm ${BINARY} ; fi
 
 docker:
-	docker build -t go-arch .
+	docker build -t hb-vendor .
 
 run:
 	docker-compose up -d

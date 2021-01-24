@@ -1,10 +1,11 @@
 package controller
 
 type AppController interface {
-	ArticleController
-	AuthorController
+	VendorController
+	UserController
 }
+
 type Controller struct {
-	ArticleController
-	AuthorController
+	VendorController
+	UserController
 }

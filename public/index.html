@@ -1,34 +1,591 @@
-<!doctype html>
-<html lang="en">
-
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
+  <title>Huobi Vendor</title>
   <meta charset="utf-8">
-  <title>WebSocket</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <link rel="icon" href="favicon.ico">
+  <link href="bootstrap.min.css" rel="stylesheet">
+  <link href="style.css" rel="stylesheet">
+
+  <script src="vue.js"></script>
+  <script src="vue-router.js"></script>
+  <script src="vuex.js"></script>
+  <script src="axios.min.js"></script>
+  <script src="http-vue-loader.js"></script>
+
 </head>
-
 <body>
-  <p id="output"></p>
 
-  <script>
-    const loc = window.location;
-    const path = '/ws_hello';
-    let uri = (loc.protocol === 'https:') ? 'wss:' : 'ws:';
-    let url=uri+'//'+loc.host+path;
-    ws = new WebSocket(url);
+<div id="app"></div>
+<script type="text/x-template" id="upload_file">
+    <div class="form-row">
+      <div class="form-group col-md-12">
+        <input class="invisible" type="file" id="files" ref="files" @change="handleFilesUpload()" multiple/>
+        <div class="large-12 medium-12 small-12 cell">
+          <div v-for="(file, key) in file_names" class="file-listing border-bottom">
+            <a href @click.prevent="getFile(file)">{{ file }}</a>
+            <button type="button" class="close" aria-label="Close"  @click="removeFile( key )">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        </div>
+        <br>
+        <progress class="col-md-12" max="100" :value.prop="uploadPercentage"></progress>
+        <br>
+        <div class="large-12 medium-12 small-12 cell">
+          <button class="btn btn-default" @click.prevent="addFiles()">添加附件</button>
+        </div>
+      </div>
+    </div>
+</script>
 
-    ws.onopen = function() {
-      console.log('Connected:',url)
-    }
+<script type="text/x-template" id="layout">
+  <div class="vue-tempalte">
+    <nav class="navbar shadow bg-white rounded justify-content-between flex-nowrap flex-row fixed-top">
+      <div class="container">
+        <a class="navbar-brand float-left" href="https://www.huobi.com/zh-cn/" >
+          HUOBI VENDOR
+        </a>
+        <div class="navbar-nav mr-auto">
+          <ul class="nav navbar-nav flex-row float-right">
 
-    ws.onmessage = function(evt) {
-      const out = document.getElementById('output');
-      out.innerHTML += evt.data + '<br>';
-    }
+          <li class="nav-item pr-3">
+            <router-link to="/home" class="nav-link ">
+              首页
+            </router-link>
+          </li>
+          <li v-if="showAdminBoard" class="nav-item pr-3">
+            <router-link to="/admin" class="nav-link">操作员</router-link>
+          </li>
+          <li v-if="showOperBoard" class="nav-item pr-3">
+            <router-link to="/oper" class="nav-link">供应商</router-link>
+          </li>
+            <li v-if="showVendorBoard" class="nav-item pr-3">
+              <router-link to="/vendor/show" class="nav-link">企业信息</router-link>
+            </li>
+          </ul>
+        </div>
+        <div v-if="!currentUser" class="navbar-nav ml-auto">
+          <ul class="nav navbar-nav flex-row float-right">
+            <li class="nav-item">
+              <router-link class="nav-link pr-3" to="/login">登录</router-link>
+            </li>
+            <li class="nav-item">
+              <router-link class="nav-link pr-3" to="/sign_up">注册</router-link>
+            </li>
+          </ul>
+        </div>
+        <div v-if="currentUser" class="navbar-nav ml-auto">
+          <ul class="nav navbar-nav flex-row float-right">
+            <li class="nav-item">
+              <router-link class="nav-link pr-3" to="/profile">{{ currentUser.name }}</router-link>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link pre-3" href @click.prevent="logOut">
+                退出
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!-- Main -->
+    <div class="App">
+      <div class="vertical-center">
+          <router-view />
+      </div>
+    </div>
+  </div>
+</script>
 
-    setInterval(function() {
-      ws.send('Hello, Server!');
-    }, 5000);
-  </script>
+<script type="text/x-template" id="captcha">
+    <div class="form-row">
+        <div class="form-group col-md-8">
+            <input type="number" @input="$emit('update:captcha_code', $event.target.value)"  class="form-control form-control-lg"
+                   name="captcha_code"  placeholder="输入图中的数字" required/>
+        </div>
+        <div class="form-group col-md-4">
+          <img id="captcha-img" class="captcha-img" :src="captcha_url" @click="refresh">
+        </div>
+    </div>
+</script>
+<script type="text/x-template" id="home">
+  <template>
+    <div class="inner-block col-md-6">
+        <h2 class="text-center">{{content}}</h2>
+    </div>
+  </template>
+</script>
+<script type="text/x-template" id="profile">
+    <div class="inner-block col-md-5">
+        <h3>用户信息</h3>
+      <form>
+        <div class="form-group row">
+          <label for="staticName" class="col-sm-3 col-form-label">用户名</label>
+          <div class="col-sm-9">
+            <input type="text" readonly class="form-control-plaintext" id="staticName" :value="user.name">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="staticType" class="col-sm-3 col-form-label">用户类型</label>
+          <div class="col-sm-9">
+            <input type="text" readonly class="form-control-plaintext" id="staticType" :value="userType">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="staticState" class="col-sm-3 col-form-label">用户状态</label>
+          <div class="col-sm-9">
+            <input type="text" readonly class="form-control-plaintext" id="staticState" :value="userState">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="staticCreate" class="col-sm-3 col-form-label">注册时间</label>
+          <div class="col-sm-9">
+            <input type="text" readonly class="form-control-plaintext" id="staticCreate" :value="user.create_time">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="oldPassword" class="col-sm-3 col-form-label">原口令</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control " id="oldPassword">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="newPassword" class="col-sm-3 col-form-label">新口令</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control " id="newPassword">
+          </div>
+        </div>
+        <button  type="button" @click="savePassword"  class="btn btn-dark btn-lg btn-block">修改口令</button>
+        <div class="form-group">
+          <div v-if="message" class="alert alert-danger" role="alert">{{message}}</div>
+        </div>
+
+      </form>
+    </div>
+</script>
+<script type="text/x-template" id="board_user">
+  <div class="inner-block col-md-11">
+    <div class="row">
+      <div class="col-md-2">
+        <h5>供应商列表</h5>
+      </div>
+      <div class="col-md-10">
+        <button class="btn btn-outline-info float-right" @click="prevPage" >上一页</button>
+        <button class="btn btn-outline-info float-right" @click="nextPage" >下一页</button>
+      </div>
+      </div>
+
+    <table class="table ">
+      <thead class="thead-light">
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">用户</th>
+        <th scope="col">状态</th>
+        <th scope="col">创建日期</th>
+        <th scope="col">更新日期</th>
+        <th scope="col">操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(value,key) in content.users"  class="">
+        <th scope="row">{{value.id}}</th>
+        <td>{{value.name}}</td>
+        <td>{{userState(value.state)}}</td>
+        <td>{{value.create_time}}</td>
+        <td>{{value.update_time}}</td>
+        <td class="text-right">
+          <button class="btn btn-info" @click="showDetail(value.id)" >查看</button>
+          <button class="btn btn-danger" @click="disableUser(value.id)" >禁用</button>
+          <button class="btn btn-danger" @click="disableUser(value.id)">重置口令</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</script>
+<script type="text/x-template" id="board_admin">
+  <div class="inner-block col-md-11">
+
+    <div class="row">
+      <div class="col-md-2">
+        <h5>操作员列表</h5>
+      </div>
+      <div class="col-md-10">
+        <form class="float-right">
+          <div class="form-row">
+            <div class="col-6">
+              <input type="text" v-model="user.name" class="form-control" placeholder="用户名">
+            </div>
+            <div class="col-4">
+              <input type="password" v-model="user.password" class="form-control" placeholder="口令">
+            </div>
+            <div class="col-2 ">
+              <button class="btn btn-primary float-right" @click="createUser" >创建</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+
+    <table class="table ">
+      <thead class="thead-light">
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">用户</th>
+        <th scope="col">状态</th>
+        <th scope="col">创建日期</th>
+        <th scope="col">更新日期</th>
+        <th scope="col">操作</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(value,key) in content.users"  class="">
+        <th scope="row">{{value.id}}</th>
+        <td>{{value.name}}</td>
+        <td>{{userState(value.state)}}</td>
+        <td>{{value.create_time}}</td>
+        <td>{{value.update_time}}</td>
+        <td class="text-right">
+          <button class="btn btn-danger" @click="disableUser(value.id)" >禁用</button>
+          <button class="btn btn-danger" @click="disableUser(value.id)">重置口令</button>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</script>
+
+<script type="text/x-template" id="sign_in">
+  <div class="inner-block">
+  <div class="vue-tempalte">
+    <form>
+      <h3>登录</h3>
+
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="name" class="form-control form-control-lg" name="name" v-model="user.name" required/>
+      </div>
+
+      <div class="form-group">
+        <label>口令</label>
+        <input type="password" class="form-control form-control-lg" name="password" v-model="user.password" required/>
+      </div>
+
+      <captcha :captcha_id.sync="user.captcha_id" :captcha_code.sync="user.captcha_code"></captcha>
+
+      <button type="button" class="btn btn-dark btn-lg btn-block" @click="sign_in()"  >登录</button>
+
+      <p class="forgot-password text-right mt-2 mb-4">
+<!--        <router-link to="/reset_password">忘记密码 ?</router-link>-->
+      </p>
+      <div class="form-group">
+        <div v-if="message" class="alert alert-danger" role="alert">{{message}}</div>
+      </div>
+    </form>
+  </div>
+  </div>
+</script>
+
+<script type="text/x-template" id="sign_up">
+  <div class="inner-block">
+    <div class="vue-tempalte">
+    <form>
+      <h3>注册</h3>
+
+      <div class="form-group">
+        <label>用户名</label>
+        <input type="text" class="form-control form-control-lg" v-model="user.name"/>
+      </div>
+
+<!--      <div class="form-group">-->
+<!--        <label>邮箱</label>-->
+<!--        <input type="email" class="form-control form-control-lg" v-model="user.email" />-->
+<!--      </div>-->
+
+      <div class="form-group">
+        <label>口令</label>
+        <input type="password" class="form-control form-control-lg" v-model="user.password" />
+      </div>
+      <captcha :captcha_id.sync="user.captcha_id" :captcha_code.sync="user.captcha_code"></captcha>
+
+      <button type="button" class="btn btn-dark btn-lg btn-block" @click="sign_up()" >注册</button>
+
+      <p class="forgot-password text-right">
+        如果已经注册，请点击这里登录
+        <router-link to="/login">登录?</router-link>
+      </p>
+
+    </form>
+      <div v-if="message" class="alert" :class="successful ? 'alert-success' : 'alert-danger'">
+        {{message}}
+      </div>
+
+  </div>
+  </div>
+</script>
+<script type="text/x-template" id="reset_password">
+  <div class="vue-tempalte">
+    <form>
+      <h3>Forgot Password</h3>
+
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" class="form-control form-control-lg" />
+      </div>
+
+      <button type="submit" class="btn btn-dark btn-lg btn-block">Reset password</button>
+
+    </form>
+  </div>
+</script>
+
+<script type="text/x-template" id="vendor">
+  <div class="width-block">
+  <div class="vue-tempalte">
+    <h3>供应商信息</h3>
+    <h3 class="text-right"><span class="badge badge-warning">{{vendorState}}</span></h3>
+    <form ref="form">
+      <fieldset disabled :disabled="isShow">
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="type">供应商类型</label>
+          <select v-model.number="vendor.type" id="type" class="form-control">
+            <option v-for="(value, key) in vendor_type_options" :value="key">{{value}}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="name">公司名称</label>
+          <input v-model="vendor.name" type="text" class="form-control" id="name" placeholder="名称" required>
+          <div class="invalid-feedback">
+            请输入公司名称.
+          </div>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="address">公司地址</label>
+          <input v-model="vendor.address" type="text" class="form-control" id="address" placeholder="地址" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="phone">公司电话</label>
+          <input v-model="vendor.phone" type="text" class="form-control" id="phone" placeholder="公司电话" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="web_link">公司网址</label>
+          <input v-model="vendor.web_link" type="text" class="form-control" id="web_link" placeholder="公司网址" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="registered_address">注册地址</label>
+          <input v-model="vendor.registered_address" type="text" class="form-control" id="registered_address" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="registered_capital">注册资本</label>
+          <input v-model.number="vendor.registered_capital" type="number" class="form-control" id="registered_capital" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="registered_no">营业执照编号</label>
+          <input v-model="vendor.registered_no" type="text" class="form-control" id="registered_no" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="registered_date">成立日期</label>
+          <input v-model="vendor.registered_date" type="date" class="form-control" id="registered_date" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="registered_type">企业类型</label>
+          <select v-model.number="vendor.registered_type" id="registered_type" class="form-control" required>
+            <option v-for="(value, key) in registered_type_options" :value="key">{{value}}</option>
+          </select>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="tax_no">税务登记号</label>
+          <input v-model="vendor.tax_no" type="text" class="form-control" id="tax_no" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="employee_count">员工总数</label>
+          <input v-model.number="vendor.employee_count" type="number" class="form-control" id="employee_count" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="market_staff_count">市场及销售人员</label>
+          <input v-model.number="vendor.market_staff_count" type="number" class="form-control" id="market_staff_count" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="technical_staff_count">技术及服务人员</label>
+          <input v-model.number="vendor.technical_staff_count" type="number" class="form-control" id="technical_staff_count" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="bank_name">银行账号</label>
+          <input v-model="vendor.bank_name" type="text" class="form-control" id="bank_name" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-12">
+          <label for="bank_account">银行帐户</label>
+          <input v-model="vendor.bank_account" type="text" class="form-control" id="bank_account" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="referrer">推荐人</label>
+          <input v-model="vendor.referrer" type="text" class="form-control" id="referrer" placeholder="" >
+        </div>
+        <div class="form-group col-md-6">
+          <label for="referrer_reason">推荐理由</label>
+          <input v-model="vendor.referrer_reason" type="text" class="form-control" id="referrer_reason" placeholder="" >
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-4">
+          <label for="main_product">主要销售产品</label>
+          <input v-model="vendor.main_product" type="text" class="form-control" id="main_product" placeholder="" required>
+        </div>
+        <div class="form-group col-md-4">
+          <label for="channel_level">渠道等级</label>
+          <input v-model="vendor.channel_level" type="text" class="form-control" id="channel_level" placeholder="" >
+        </div>
+        <div class="form-group col-md-4">
+          <label for="channel_level">是否全国</label>
+          <select v-model.number="vendor.is_all_country" id="is_all_country" class="form-control" required>
+            <option v-for="(value, key) in bool_options" :value="key">{{value}}</option>
+          </select>
+
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-12 border-bottom">
+          <label for="main_product">联系信息</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6 border-bottom">
+          <label for="main_product">公司总负责人/CEO/老板</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="boss_name">姓名</label>
+          <input v-model="vendor.boss_name" type="text" class="form-control" id="boss_name" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="boss_tel">座机</label>
+          <input v-model="vendor.boss_tel" type="text" class="form-control" id="boss_tel" placeholder="">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="boss_phone">手机</label>
+          <input v-model="vendor.boss_phone" type="text" class="form-control" id="boss_phone" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="boss_email">邮箱</label>
+          <input v-model="vendor.boss_email" type="email" class="form-control" id="boss_email" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6 border-bottom">
+          <label>直接客户经理</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="boss_name">姓名</label>
+          <input v-model="vendor.contact_name" type="text" class="form-control" id="contact_name" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="boss_tel">座机</label>
+          <input v-model="vendor.contact_tel" type="text" class="form-control" id="contact_tel" placeholder="">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="contact_phone">手机</label>
+          <input v-model="vendor.contact_phone" type="text" class="form-control" id="contact_phone" placeholder="" required>
+        </div>
+        <div class="form-group col-md-6">
+          <label for="contact_email">邮箱</label>
+          <input v-model="vendor.contact_email" type="email" class="form-control" id="contact_email" placeholder="" required>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label>需要提供的相应文件</label>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label class="" >相关资质</label>
+          <upload-file  id="qualification_documents" v-model="vendor.qualification_documents" name="qualification_documents" cllass="form-control"></upload-file>
+        </div>
+        <div class="form-group col-md-6">
+          <label class="" >成功故事</label>
+          <upload-file  id="success_case_documents" v-model="vendor.success_case_documents" name="success_case_documents" cllass="form-control"></upload-file>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          注：需上传
+          <ol class="text-danger">
+            <li>供应商信息登记表(加盖公章原件，复印件或扫描件）</li>
+            <li>营业执照（加盖公章复印或扫描件）</li>
+            <li>代理资质证书（加盖公章复印或扫描件）</li>
+            <li>火币反商业贿赂说明（加盖公章原件）</li>
+            <li>火币保密协议（加盖公章原件）</li>
+            <li>其他认为需要提交的资料-(加盖公章原件或扫描件）</li>
+          </ol>
+        </div>
+      </div>
+
+      </fieldset>
+      <div v-if="showVendorBoard">
+        <div v-if="isUpdate || isCreate" class="row">
+          <div class="col-md-6">
+            <button  type="button" @click="saveVendor"  class="btn btn-dark btn-lg btn-block">保存</button>
+          </div>
+          <div class="col-md-6">
+            <button  type="button" @click="unSaveVendor"  class="btn btn-dark btn-lg btn-block">放弃</button>
+          </div>
+        </div>
+        <div v-if="isShow && allowCreate" class="row">
+          <button  type="button" @click="toCreate" class="btn btn-dark btn-lg btn-block">创建</button>
+        </div>
+        <div v-if="isShow && allowEdit" class="row">
+          <div class="col-md-6">
+            <button  type="button" @click="editVendor" class="btn btn-dark btn-lg btn-block">修改</button>
+          </div>
+          <div class="col-md-6">
+            <button  type="button" @click="submitVendor" class="btn btn-dark btn-lg btn-block">提交审核</button>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+  </div>
+</script>
+
+<!--first load init.js-->
+<script src="app_init.js"></script>
+<script src="user_service.js"></script>
+<script src="auth_service.js"></script>
+<script src="app.js"></script>
+
 </body>
-
 </html>
+
