@@ -17,7 +17,9 @@ import (
 
 type UserController interface {
 	ResetPassword(c Context) error
+	ChangePassword(c Context) error
 	DisableUser(c Context) error
+	EnableUser(c Context) error
 	GetUsers(c Context) error
 	UpdateUser(c Context) error
 	CreateUser(c Context) error
@@ -160,13 +162,21 @@ func (uc *userController) SignUp(c Context) error {
 }
 
 func (uc *userController) GetUsers(c Context) error {
+	type User struct {
+		Page    int    `json:"page" form:"page" query:"page"`
+		OrderBy string `json:"order_by" form:"order_by" query:"order_by"`
+	}
+	u := new(User)
+	if err := c.Bind(u); err != nil {
+		return err
+	}
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*domain.JwtCustomClaims)
 	if claims.Type == domain.NORMAL {
 		return echo.ErrForbidden
 	}
 	//default offset 0 limit 10
-	ar := &domain.User{Offset: 0, Limit: 10}
+	ar := &domain.User{Offset: u.Page * 5, Limit: 5, OrderBy: u.OrderBy}
 	if claims.Type == domain.ADMIN {
 		ar.Type = domain.OPER
 	}
@@ -187,6 +197,37 @@ func (uc *userController) GetUsers(c Context) error {
 	})
 }
 
+func (uc *userController) ChangePassword(c Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*domain.JwtCustomClaims)
+	type User struct {
+		OldPassword string `json:"old_password" form:"old_password" query:"old_password"`
+		NewPassword string `json:"new_password" form:"new_password" query:"new_password"`
+	}
+	u := new(User)
+	if err := c.Bind(u); err != nil {
+		return err
+	}
+
+	ar := &domain.User{ID: claims.UserId}
+
+	fu, err := uc.userInteractor.Find(ar)
+	if err != nil {
+		return err
+	}
+	if !utils.ComparePasswords(fu.Password, u.OldPassword) {
+		return echo.ErrUnauthorized
+	}
+
+	ar.Password = utils.HashAndSalt(u.NewPassword)
+	err = uc.userInteractor.UpdatePassword(ar)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, ar)
+
+}
+
 func (uc *userController) ResetPassword(c Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*domain.JwtCustomClaims)
@@ -199,11 +240,29 @@ func (uc *userController) ResetPassword(c Context) error {
 	passDefault := "Qazwsx123"
 	ar := &domain.User{ID: idi}
 	ar.Password = utils.HashAndSalt(passDefault)
-	err := uc.userInteractor.Update(ar)
+	err := uc.userInteractor.UpdatePassword(ar)
 	if err != nil {
 		return err
 	}
 	return c.JSON(http.StatusOK, ar)
+}
+
+func (uc *userController) EnableUser(c Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*domain.JwtCustomClaims)
+	if claims.Type != domain.ADMIN && claims.Type != domain.OPER {
+		return echo.ErrForbidden
+	}
+
+	id := c.Param("id")
+	idi, _ := strconv.ParseInt(id, 10, 64)
+	ar := &domain.User{ID: idi, State: domain.UserApprove}
+	err := uc.userInteractor.UpdateState(ar)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, ar)
+
 }
 func (uc *userController) DisableUser(c Context) error {
 	user := c.Get("user").(*jwt.Token)
@@ -215,7 +274,7 @@ func (uc *userController) DisableUser(c Context) error {
 	id := c.Param("id")
 	idi, _ := strconv.ParseInt(id, 10, 64)
 	ar := &domain.User{ID: idi, State: domain.UserReject}
-	err := uc.userInteractor.Update(ar)
+	err := uc.userInteractor.UpdateState(ar)
 	if err != nil {
 		return err
 	}

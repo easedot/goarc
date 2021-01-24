@@ -13,4 +13,5 @@ type User struct {
 	CaptchaCode string `json:"captcha_code" db:"-"`
 	Offset      int    `json:"offset" db:"-"`
 	Limit       int    `json:"limit" db:"-"`
+	OrderBy     string `json:"order_by" db:"-"`
 }

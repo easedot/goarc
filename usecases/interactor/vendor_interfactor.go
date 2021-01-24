@@ -12,6 +12,7 @@ type VendorInteractor interface {
 	Query(u []*domain.Vendor) ([]*domain.Vendor, error)
 	Find(u *domain.Vendor) (*domain.Vendor, error)
 	Update(u *domain.Vendor) error
+	UpdateState(u *domain.Vendor) error
 	Create(u *domain.Vendor) error
 }
 
@@ -46,6 +47,15 @@ func (ai *vendorInteractor) Find(u *domain.Vendor) (*domain.Vendor, error) {
 }
 func (ai *vendorInteractor) Update(u *domain.Vendor) error {
 	err := ai.VendorRepository.Update(u)
+	if err != nil {
+		return err
+	}
+	//user case modify response,use inject adapter response object
+	u = ai.VendorPresenter.ResponseVendor(u)
+	return nil
+}
+func (ai *vendorInteractor) UpdateState(u *domain.Vendor) error {
+	err := ai.VendorRepository.UpdateState(u)
 	if err != nil {
 		return err
 	}

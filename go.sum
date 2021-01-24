@@ -55,10 +55,10 @@ github.com/easedot/goarc v0.0.0-20200213143105-2d94f90bc740 h1:kpxvyIrANUiOPjTWf
 github.com/easedot/goarc v0.0.0-20200213143105-2d94f90bc740/go.mod h1:PW712gGcV9m4NJzznF8q2h4+En1YJIcbmxgq/4gpx1M=
 github.com/easedot/godbs v1.0.3 h1:Yrakt8d5//6OQ3ejW7aLiMrOAvO4fACbXMJO58czJnE=
 github.com/easedot/godbs v1.0.3/go.mod h1:L3V7gKdoCVsyF9ccia9fCOsdGWBdS+EZXRXEcC+BpJE=
-github.com/easedot/godbs v1.1.4 h1:ITXIcjxP42DHJWS+TA2oFqouUHxu53NwU8CBkvDnJ0c=
-github.com/easedot/godbs v1.1.4/go.mod h1:L3V7gKdoCVsyF9ccia9fCOsdGWBdS+EZXRXEcC+BpJE=
-github.com/easedot/godbs v1.1.6 h1:anWVLbHA/fxckkXwW6ra751us37ocmx3GNm2SWJfhOk=
-github.com/easedot/godbs v1.1.6/go.mod h1:L3V7gKdoCVsyF9ccia9fCOsdGWBdS+EZXRXEcC+BpJE=
+github.com/easedot/godbs v1.1.8 h1:jlNv8K1/hrr8+WsYF4K+5Xks/8QodDlA4PO213cvuYI=
+github.com/easedot/godbs v1.1.8/go.mod h1:L3V7gKdoCVsyF9ccia9fCOsdGWBdS+EZXRXEcC+BpJE=
+github.com/easedot/godbs v1.1.9 h1:2eDBzPa5tQgFgaVCeJrW5L0Z5RjDgzCOEM5ofllNm/w=
+github.com/easedot/godbs v1.1.9/go.mod h1:L3V7gKdoCVsyF9ccia9fCOsdGWBdS+EZXRXEcC+BpJE=
 github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
 github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
 github.com/fasthttp/router v0.6.0 h1:BfpXTP6PriE/JXltcPnwn2S76wREunAHNL0odr/KSc0=

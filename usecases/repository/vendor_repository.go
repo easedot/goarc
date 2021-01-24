@@ -10,6 +10,7 @@ type VendorRepository interface {
 	Find(u *domain.Vendor) (*domain.Vendor, error)
 	Update(u *domain.Vendor) error
 	Create(u *domain.Vendor) error
+	UpdateState(u *domain.Vendor) error
 }
 
 type UserRepository interface {
@@ -18,4 +19,6 @@ type UserRepository interface {
 	Find(u *domain.User) (*domain.User, error)
 	Update(u *domain.User) error
 	Create(u *domain.User) error
+	UpdateState(u *domain.User) error
+	UpdatePassword(u *domain.User) error
 }

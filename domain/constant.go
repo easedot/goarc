@@ -13,17 +13,19 @@ type JwtCustomClaims struct {
 type UserState int
 
 const (
-	UserPending int = iota + 1
-	UserApprove
+	UserApprove int = iota + 1
 	UserReject
 )
 
 type VendorState int
 
+///*1:待审核 2:审核中 3:通过 4:拒绝 5:补充*/
 const (
-	VendorPending UserState = iota + 1
-	VendorApprove
+	VendorPending int = iota + 1
+	VendorSubmited
+	VendorApproveed
 	VendorReject
+	VendorReWrite
 )
 
 type VendorType int

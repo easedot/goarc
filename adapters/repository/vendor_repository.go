@@ -3,6 +3,7 @@ package repository
 //这里是存储的具体实现，落实的具体的存储类型，如Mysql、Oracle
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
@@ -54,6 +55,16 @@ func (ar *vendorRepository) Update(u *domain.Vendor) error {
 	}
 	return nil
 }
+func (ar *vendorRepository) UpdateState(u *domain.Vendor) error {
+	q := fmt.Sprintf("UPDATE vendor SET state=%d  WHERE user_id=%d", u.State, u.UserId)
+	log.Println(q)
+	_, err := ar.db.Conn().Exec(q)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (ar *vendorRepository) Create(u *domain.Vendor) error {
 	if err := ar.db.Create(u); err != nil {
 		return err
@@ -75,7 +86,12 @@ func (ar *userRepository) RawQuery(u *domain.User) ([]*domain.User, error) {
 	_, _, _, w := ar.db.Info(u)
 	wh := strings.Join(w, " and ")
 	var r []*domain.User
-	q := fmt.Sprintf("where %s limit %d, %d ", wh, u.Offset, u.Limit)
+	q := ""
+	if u.OrderBy == "" {
+		q = fmt.Sprintf("where %s limit %d, %d ", wh, u.Offset, u.Limit)
+	} else {
+		q = fmt.Sprintf("where %s order by %s limit %d, %d ", wh, u.OrderBy, u.Offset, u.Limit)
+	}
 	if err := ar.db.SqlStructSlice(q, &r); err != nil {
 		return nil, err
 	}
@@ -108,6 +124,26 @@ func (ar *userRepository) Update(u *domain.User) error {
 }
 func (ar *userRepository) Create(u *domain.User) error {
 	if err := ar.db.Create(u); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ar *userRepository) UpdateState(u *domain.User) error {
+	q := fmt.Sprintf("UPDATE user SET state=%d  WHERE id=%d", u.State, u.ID)
+	log.Println(q)
+	_, err := ar.db.Conn().Exec(q)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (ar *userRepository) UpdatePassword(u *domain.User) error {
+	q := fmt.Sprintf("UPDATE user SET password='%s'  WHERE id=%d", u.Password, u.ID)
+	log.Println(q)
+	_, err := ar.db.Conn().Exec(q)
+	if err != nil {
 		return err
 	}
 	return nil

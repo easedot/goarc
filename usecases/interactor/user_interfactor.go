@@ -13,6 +13,8 @@ type UserInteractor interface {
 	Find(u *domain.User) (*domain.User, error)
 	Update(u *domain.User) error
 	Create(u *domain.User) error
+	UpdateState(u *domain.User) error
+	UpdatePassword(u *domain.User) error
 }
 
 //inject from outer object to interface
@@ -60,7 +62,7 @@ func (ai *userInteractor) Update(u *domain.User) error {
 		return err
 	}
 	//user case modify response,use inject adapter response object
-	u = ai.UserPresenter.ResponseUser(u)
+	//u = ai.UserPresenter.ResponseUser(u)
 	return nil
 }
 
@@ -71,5 +73,23 @@ func (ai *userInteractor) Create(u *domain.User) error {
 	}
 	//user case modify response,use inject adapter response object
 	u = ai.UserPresenter.ResponseUser(u)
+	return nil
+}
+func (ai *userInteractor) UpdateState(u *domain.User) error {
+	err := ai.UserRepository.UpdateState(u)
+	if err != nil {
+		return err
+	}
+	//user case modify response,use inject adapter response object
+	//u = ai.UserPresenter.ResponseUser(u)
+	return nil
+}
+func (ai *userInteractor) UpdatePassword(u *domain.User) error {
+	err := ai.UserRepository.UpdatePassword(u)
+	if err != nil {
+		return err
+	}
+	//user case modify response,use inject adapter response object
+	//u = ai.UserPresenter.ResponseUser(u)
 	return nil
 }

@@ -27,7 +27,7 @@ DROP TABLE IF EXISTS `vendor`;
 CREATE TABLE `vendor` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `user_id` int(11) unsigned NOT NULL,
-  `state` smallint(6) NOT NULL,     /*1:待审核 2:审核中 3:通过 4:拒绝 5:补充*/
+  `state` smallint(6) NOT NULL DEFAULT 0,     /*1:待审核 2:审核中 3:通过 4:拒绝 5:补充*/
   `type` smallint(6)  NOT NULL,     /*1:普通 2:临时*/
   `name` varchar(200)  NOT NULL,
   `address` varchar(800)  NOT NULL  DEFAULT '',

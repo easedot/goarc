@@ -21,6 +21,7 @@ type VendorController interface {
 	GetVendor(c Context) error
 	UpdateVendor(c Context) error
 	CreateVendor(c Context) error
+	SubmitVendor(c Context) error
 	UploadFile(c Context) error
 	UploadFiles(c Context) error
 	DeleteUploadFiles(c Context) error
@@ -141,9 +142,19 @@ func (ac *vendorController) UploadFiles(c Context) error {
 func (ac *vendorController) GetVendors(c Context) error {
 	user := c.Get("user").(*jwt.Token)
 	claims := user.Claims.(*domain.JwtCustomClaims)
-
 	var ars []*domain.Vendor
 	ar := &domain.Vendor{UserId: claims.UserId}
+	if claims.Type == domain.ADMIN || claims.Type == domain.OPER {
+		type User struct {
+			ID int64 `json:"user_id" form:"user_id" query:"user_id"`
+		}
+		u := new(User)
+		if err := c.Bind(u); err != nil {
+			return err
+		}
+		ar.UserId = u.ID
+	}
+
 	ars = append(ars, ar)
 	a, err := ac.vendorInteractor.Query(ars)
 	if err != nil {
@@ -153,8 +164,15 @@ func (ac *vendorController) GetVendors(c Context) error {
 }
 
 func (ac *vendorController) GetVendor(c Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*domain.JwtCustomClaims)
 	id, _ := strconv.Atoi(c.Param("id"))
-	ar := &domain.Vendor{ID: int64(id)}
+	ar := &domain.Vendor{}
+	if claims.Type == domain.NORMAL {
+		ar.UserId = claims.UserId
+	} else {
+		ar.ID = int64(id)
+	}
 	a, err := ac.vendorInteractor.Find(ar)
 	if err != nil {
 		return err
@@ -168,6 +186,7 @@ func (ac *vendorController) CreateVendor(c Context) error {
 	ar := &domain.Vendor{}
 	c.Bind(ar)
 	ar.UserId = claims.UserId
+	ar.State = domain.VendorPending
 	err := ac.vendorInteractor.Create(ar)
 	if err != nil {
 		return err
@@ -186,4 +205,17 @@ func (ac *vendorController) UpdateVendor(c Context) error {
 		return err
 	}
 	return c.JSON(http.StatusOK, ar)
+}
+func (uc *vendorController) SubmitVendor(c Context) error {
+	user := c.Get("user").(*jwt.Token)
+	claims := user.Claims.(*domain.JwtCustomClaims)
+	ar := &domain.Vendor{}
+	ar.UserId = claims.UserId
+	ar.State = domain.VendorSubmited
+	err := uc.vendorInteractor.UpdateState(ar)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, ar)
+
 }

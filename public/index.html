@@ -125,7 +125,7 @@
         <div class="form-group row">
           <label for="staticName" class="col-sm-3 col-form-label">用户名</label>
           <div class="col-sm-9">
-            <input type="text" readonly class="form-control-plaintext" id="staticName" :value="user.name">
+            <input type="text" readonly class="form-control-plaintext" id="staticName" :value="currentUser.name">
           </div>
         </div>
         <div class="form-group row">
@@ -143,22 +143,22 @@
         <div class="form-group row">
           <label for="staticCreate" class="col-sm-3 col-form-label">注册时间</label>
           <div class="col-sm-9">
-            <input type="text" readonly class="form-control-plaintext" id="staticCreate" :value="user.create_time">
+            <input type="text" readonly class="form-control-plaintext" id="staticCreate" :value="currentUser.create_time">
           </div>
         </div>
         <div class="form-group row">
-          <label for="oldPassword" class="col-sm-3 col-form-label">原口令</label>
+          <label for="oldPassword"  class="col-sm-3 col-form-label">原口令</label>
           <div class="col-sm-9">
-            <input type="text" class="form-control " id="oldPassword">
+            <input type="text" v-model="oldPassword"  class="form-control " id="oldPassword">
           </div>
         </div>
         <div class="form-group row">
           <label for="newPassword" class="col-sm-3 col-form-label">新口令</label>
           <div class="col-sm-9">
-            <input type="text" class="form-control " id="newPassword">
+            <input type="text" v-model="newPassword" class="form-control " id="newPassword">
           </div>
         </div>
-        <button  type="button" @click="savePassword"  class="btn btn-dark btn-lg btn-block">修改口令</button>
+        <button  type="button" @click="savePassword()"  class="btn btn-dark btn-lg btn-block">修改口令</button>
         <div class="form-group">
           <div v-if="message" class="alert alert-danger" role="alert">{{message}}</div>
         </div>
@@ -167,14 +167,18 @@
     </div>
 </script>
 <script type="text/x-template" id="board_user">
-  <div class="inner-block col-md-11">
+  <div class="width-block">
     <div class="row">
       <div class="col-md-2">
         <h5>供应商列表</h5>
       </div>
-      <div class="col-md-10">
-        <button class="btn btn-outline-info float-right" @click="prevPage" >上一页</button>
-        <button class="btn btn-outline-info float-right" @click="nextPage" >下一页</button>
+      <div class="col-md-5">
+        <div v-if="message" class="alert alert-danger" role="alert">{{message}}</div>
+      </div>
+      <div class="col-md-5">
+        第{{page+1}}页
+        <button class="btn btn-outline-info float-right" @click="nextPage()" >下一页</button>
+        <button v-if="page>=0" class="btn btn-outline-info float-right" @click="prevPage()" >上一页</button>
       </div>
       </div>
 
@@ -199,7 +203,8 @@
         <td class="text-right">
           <button class="btn btn-info" @click="showDetail(value.id)" >查看</button>
           <button class="btn btn-danger" @click="disableUser(value.id)" >禁用</button>
-          <button class="btn btn-danger" @click="disableUser(value.id)">重置口令</button>
+          <button class="btn btn-success" @click="enableUser(value.id)" >打开</button>
+          <button class="btn btn-danger" @click="resetPassword(value.id)">重置口令</button>
         </td>
       </tr>
       </tbody>
@@ -207,13 +212,16 @@
   </div>
 </script>
 <script type="text/x-template" id="board_admin">
-  <div class="inner-block col-md-11">
+  <div class="width-block">
 
     <div class="row">
       <div class="col-md-2">
         <h5>操作员列表</h5>
       </div>
-      <div class="col-md-10">
+      <div class="col-md-5">
+        <div v-if="message" class="alert alert-danger" role="alert">{{message}}</div>
+      </div>
+      <div class="col-md-5">
         <form class="float-right">
           <div class="form-row">
             <div class="col-6">
@@ -251,7 +259,8 @@
         <td>{{value.update_time}}</td>
         <td class="text-right">
           <button class="btn btn-danger" @click="disableUser(value.id)" >禁用</button>
-          <button class="btn btn-danger" @click="disableUser(value.id)">重置口令</button>
+          <button class="btn btn-success" @click="enableUser(value.id)" >打开</button>
+          <button class="btn btn-danger" @click="resetPassword(value.id)">重置口令</button>
         </td>
       </tr>
       </tbody>
@@ -571,7 +580,7 @@
             <button  type="button" @click="editVendor" class="btn btn-dark btn-lg btn-block">修改</button>
           </div>
           <div class="col-md-6">
-            <button  type="button" @click="submitVendor" class="btn btn-dark btn-lg btn-block">提交审核</button>
+            <button  type="button" @click="submitVendor" class="btn btn-danger btn-lg btn-block">提交审核</button>
           </div>
         </div>
       </div>

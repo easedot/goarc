@@ -7,7 +7,7 @@ require (
 	github.com/dchest/captcha v0.0.0-20200903113550-03f5f0333e1f
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/easedot/goarc v0.0.0-20200213143105-2d94f90bc740
-	github.com/easedot/godbs v1.1.6
+	github.com/easedot/godbs v1.1.9
 	github.com/go-sql-driver/mysql v1.4.1
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/labstack/echo-contrib v0.8.0

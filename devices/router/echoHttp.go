@@ -90,12 +90,15 @@ func NewERouter(e *echo.Echo, c controller.AppController) *echo.Echo {
 	v1.GET("/vendor/:id", func(context echo.Context) error { return c.GetVendor(&ctxWrap{c: context}) })
 	v1.PUT("/vendor", func(context echo.Context) error { return c.UpdateVendor(&ctxWrap{c: context}) })
 	v1.POST("/vendor", func(context echo.Context) error { return c.CreateVendor(&ctxWrap{c: context}) })
+	v1.PUT("/vendor/submit", func(context echo.Context) error { return c.SubmitVendor(&ctxWrap{c: context}) })
 
 	v1.GET("/users", func(context echo.Context) error { return c.GetUsers(&ctxWrap{c: context}) })
 	v1.POST("/user", func(context echo.Context) error { return c.CreateUser(&ctxWrap{c: context}) })
 	v1.PUT("/user", func(context echo.Context) error { return c.UpdateUser(&ctxWrap{c: context}) })
 	v1.PUT("/user/disable/:id", func(context echo.Context) error { return c.DisableUser(&ctxWrap{c: context}) })
+	v1.PUT("/user/enable/:id", func(context echo.Context) error { return c.EnableUser(&ctxWrap{c: context}) })
 	v1.PUT("/user/reset_password/:id", func(context echo.Context) error { return c.ResetPassword(&ctxWrap{c: context}) })
+	v1.PUT("/user/change_password", func(context echo.Context) error { return c.ChangePassword(&ctxWrap{c: context}) })
 
 	v1.POST("/upload_file", func(context echo.Context) error { return c.UploadFiles(&ctxWrap{c: context}) })
 	v1.GET("/upload_file/:id", func(context echo.Context) error { return c.GetUploadFiles(&ctxWrap{c: context}) })

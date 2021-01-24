@@ -24,7 +24,7 @@ const auth = {
             state.status.loggedIn = false;
             state.user = null;
         },
-        registerSuccess(state) {
+        registerSuccess(state,user) {
             state.status.loggedIn = true;
             state.user = user;
         },
@@ -53,9 +53,9 @@ const auth = {
         },
         register:function (context,user){
             return authService.register(user).then(
-                response => {
-                    context.commit('registerSuccess');
-                    return Promise.resolve(response.data);
+                user => {
+                    context.commit('registerSuccess',user);
+                    return Promise.resolve(user);
                 },
                 error => {
                     context.commit('registerFailure');
@@ -64,45 +64,6 @@ const auth = {
             );
         }
     },
-    // sign_up:function (name,password,captcha_id,captcha_code){
-    //     return axios
-    //         .post( '/sign_up', {
-    //             name: name,
-    //             password: password,
-    //             captcha_id,
-    //             captcha_code
-    //         })
-    //         .then(response => {
-    //             console.info("sign_up",response)
-    //             if (response.data.accessToken) {
-    //                 localStorage.setItem('user', JSON.stringify(response.data));
-    //             }
-    //             return response.data;
-    //         })
-    //
-    // },
-    // sign_in:function (name,password,captcha_id,captcha_code){
-    //     return axios
-    //     .post( '/sign_in', {
-    //         name: name,
-    //         password: password,
-    //         captcha_id,
-    //         captcha_code
-    //     })
-    //     .then(response => {
-    //         console.info("sign_in",response)
-    //         if (response.data.accessToken) {
-    //             localStorage.setItem('user', JSON.stringify(response.data));
-    //         }
-    //         return response.data;
-    //     }).catch(function (error) {
-    //         console.log(error.response.status) // 401
-    //         console.log(error.response.data.error) //Please Authenticate or whatever returned from server
-    //         if(error.response.status===401){
-    //             //redirect to login
-    //         }
-    //     })
-    // }
 }
 const store = new Vuex.Store({
     state: {
@@ -343,6 +304,7 @@ const SignUp = {
                         data => {
                             this.message = "注册成功";
                             this.successful = true;
+                            this.$router.push('/profile');
                             this.$router.push({ name: 'vendor', params: { edit_mode: 'create',user:this.user }});
                         },
                         error => {
@@ -379,8 +341,8 @@ const Profile ={
     data() {
         return {
             message: '',
-            oldPassword:"",
-            newPassword:""
+            oldPassword:'',
+            newPassword:''
         };
     },
     computed: {
@@ -401,7 +363,21 @@ const Profile ={
     },
     methods:{
         savePassword(){
+            let user = {old_password: this.oldPassword,new_password: this.newPassword}
+            userService.changePassword(user).then(
+                resp=>{
+                    this.message="修改成功"
+                    this.$store.dispatch('auth/logout');
+                    this.$router.push('/login');
+                },
+                error => {
+                    this.message =
+                        (error.response && error.response.data) ||
+                        error.message ||
+                        error.toString();
+                }
 
+            )
         }
     },
     template: "#profile"
@@ -504,9 +480,10 @@ const Vendor = {
             this.$router.push({ name: 'vendor', params: { edit_mode: 'show' }});
         },
         submitVendor:function (){
-            axios.post( '/api/v1/vendor', this.vendor)
+            axios.put( '/api/v1/vendor/submit')
                 .then(response => {
                     console.info("create vendor", response)
+                    this.vendor.state = VENDOR_STATE_SUBMITED
                     this.$router.push({ name: 'vendor', params: { edit_mode: 'show' }});
                 })
         },
@@ -514,6 +491,7 @@ const Vendor = {
             axios.post( '/api/v1/vendor', this.vendor)
             .then(response => {
                 console.info("create vendor", response)
+                this.vendor.state = VENDOR_STATE_INIT
                 this.$router.push({ name: 'vendor', params: { edit_mode: 'show' }});
             })
         },
@@ -526,6 +504,7 @@ const Vendor = {
         },
         getVendor:function (){
             axios.get( '/api/v1/vendors', {
+                params:this.user
             })
             .then(response => {
                 console.info("vendor",response)
@@ -562,6 +541,7 @@ const BoardAdmin={
     data() {
         return {
             content: {'message':'Home'},
+            message:"",
             user: new User("","","","","")
         };
     },
@@ -601,10 +581,17 @@ const BoardAdmin={
                 },
             )
         },
+        enableUser(userId){
+            userService.enableUser(userId).then(
+                response => {
+                    this.loadData();
+                },
+            )
+        },
         resetPassword(userId){
             userService.resetPassword(userId).then(
                 response => {
-                    //ths.loadData();
+                    this.message = "修改成功"
                 },
             )
         }
@@ -617,6 +604,7 @@ const BoardUser={
     data() {
         return {
             content: {'message':'Home'},
+            message:"",
             page: 0,
             user: new User("","","","","")
         };
@@ -627,18 +615,21 @@ const BoardUser={
     template: "#board_user",
     methods:{
         prevPage(){
-            this.page=this.page-1
-            this.loadData()
+            if (this.page>=1){
+                this.page=this.page-1
+                this.loadData()
+            }
         },
         nextPage(){
             this.page=this.page+1
             this.loadData()
         },
         showDetail(userId){
-            this.$router.push({ name: 'vendor', params: { edit_mode: 'show' }});
+            this.$router.push({ name: 'vendor', params: { edit_mode: 'show',user: {user_id:userId} }});
         },
         loadData(){
-            userService.getUserBoard().then(
+            q={page:this.page,order_by:"id desc"}
+            userService.getUserBoard(q).then(
                 response => {
                     this.content = response.data;
                 },
@@ -661,10 +652,17 @@ const BoardUser={
                 },
             )
         },
+        enableUser(userId){
+            userService.enableUser(userId).then(
+                response => {
+                    this.loadData();
+                },
+            )
+        },
         resetPassword(userId){
             userService.resetPassword(userId).then(
                 response => {
-                    //ths.loadData();
+                    this.message="修改成功"
                 },
             )
         }
