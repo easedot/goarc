@@ -4,7 +4,7 @@ services:
     image: hb-vendor
     container_name: hb_vendor_api
     ports:
-      - 8080:8080
+      - 8080:9090
     depends_on:
       mysql:
         condition: service_healthy
